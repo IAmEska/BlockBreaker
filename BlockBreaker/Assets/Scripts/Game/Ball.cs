@@ -4,51 +4,47 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour {
 
+    public Platform platform;
+
 	public float constantSpeed = 5f;
-
-	private Vector3 _direction;
+    public float horizontalLaunch = 2f;
+    
 	private Rigidbody2D _rigidbody;
+    private Vector3 _paddleToBallVector;
+    private bool _isStarted;
 
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
+        platform = FindObjectOfType<Platform>();
+        _paddleToBallVector = transform.position - platform.transform.position;
+        _isStarted = false;
 		_rigidbody = GetComponent<Rigidbody2D> ();
-		_rigidbody.velocity = -Vector2.up * constantSpeed;
-	}
-		
-	void OnTriggerEnter2D(Collider2D col)
-	{
-		Debug.Log ("trigger enter");
+		//_rigidbody.velocity = -Vector2.up * constantSpeed;
 	}
 
-	void OnCollisionEnter2D(Collision2D coll) { 
-		Debug.Log ("collision enter");
+    void Update()
+    {
+        if (_isStarted)
+            return;
 
-		/*Vector2 from = coll.contacts [0].point;
-		if (coll.gameObject.tag == "Platform") {
-			//from.x = coll.transform.position.x;
-		}
-		Vector2 dir = from - new Vector2 (transform.position.x, transform.position.y);
+        transform.position = platform.transform.position + _paddleToBallVector;
 
+        if (Input.GetMouseButton(0))
+        {
+            _rigidbody.velocity = new Vector2(horizontalLaunch, constantSpeed);
+            _isStarted = true;
+        }
+    }
 
-
-		Vector2 old = _direction;
-		Vector2 pos = transform.position;
-
-		dir = -dir.normalized;
-
-		if (dir.y == 0) {
-			dir.y = _direction.y;
-		} else if (dir.x == 0) {
-			dir.x = _direction.x;
-		}
-		_direction = dir;
-
-		Debug.DrawRay(from, coll.contacts[0].normal, Color.yellow, 4);
-		Debug.DrawRay(transform.position.normalized, from, Color.white, 4);*/
-			
-		if (coll.gameObject.tag == "Brick") {
-			Destroy (coll.gameObject);
-		}
-	}
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        
+        if (_isStarted)
+        {
+            Debug.Log("enter");
+            Vector2 tweak = new Vector2(Random.Range(0f, 0.2f), Random.Range(0f, 0.2f));
+            _rigidbody.velocity = _rigidbody.velocity + tweak;
+        }
+    }
 }
